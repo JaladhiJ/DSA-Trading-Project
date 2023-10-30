@@ -1,5 +1,5 @@
 #include "receiver.h"
-
+#include <vector>
 #include <iostream>
 #include <string>
 using namespace std;
@@ -429,68 +429,99 @@ int Map::cnt = 0;
 //     cout<<"count chud raha"<< map.count(key5)<<endl;
 //     return 0;
 // }
-int stringToInt( string str) {
+int stringToInt(string str) {
     int result = 0;
-    for (int i = 0; str[i] != '\0'; i++) {
+    int sign = 1; // Initialize the sign to positive
+
+    // Check for a minus sign at the beginning of the string
+    if (!str.empty() && str[0] == '-') {
+        sign = -1;
+        str = str.substr(1); // Remove the minus sign from the string
+    }
+
+    for (int i = 0; i < str.length(); i++) {
         if (str[i] >= '0' && str[i] <= '9') {
             result = result * 10 + (str[i] - '0');
         } else {
             // Handle invalid characters or non-digit characters here
         }
     }
-    return result;
+
+    // Apply the sign to the result
+    return result * sign;
 }
+
+struct MyData {
+    int value;
+    Map* mapPtr;
+    
+    MyData(int v, Map* ptr) : value(v), mapPtr(ptr) {}
+};
+
 int main() {
-
+    // Simulating the received message from your code
     Receiver rcv;
-    //sleep(5);
-    Map map;
-
     std::string message = rcv.readIML();
+
     std::istringstream iss(message);
     std::string input;
-
+    char delimiter = '#';
+    std::vector<MyData*> dataVector;
+    
     // Loop to extract input lines until a newline character is encountered
-    while (std::getline(iss, input, '#')) {
-        // Process each input line here
-        // You can split 'input' further using whitespace or other delimiters
-        // For example, split by space to separate <name>, <value>, and <s/b>
+    while (std::getline(iss, input, delimiter)) {
         std::istringstream lineStream(input);
-        std::string name, value, sb;
-        lineStream>>name>>value>>sb;
-        if(name[0]=='$')return 0;
-        // name=trim(name);
-        // value=trim(value);
-        // sb=trim(sb);
-        // cout<<"count chud raha??" <<endl;
-        int n=stringToInt(value);
-        if(!map.count(name)){
-            map.insert(name,n);cout<<name<<" "<<n<<" ";
-            if(sb[0]=='s')cout<<'b'<<endl;
-            if(sb[0]=='b')cout<<'s'<<endl;
-            }
-        else
-        {
-          if(sb[0]=='s'){
-            if(n<map[name]){
-              cout<<name<<" "<<n<<" "<<'b'<<endl;
-              map.update(name,n);
-            }
-            else{
-              cout<<"No Trade"<<endl;
-            }
-          }
-          else{
-            if(n>map[name]){
-              cout<<name<<" "<<n<<" "<<'s'<<endl;
-              map.update(name,n);
-            }
-            else{
-              cout<<"No Trade"<<endl;
-            }
-          }
-        }
-}
+        std::string name, value;
 
-return 0;
+        std::vector<std::pair<std::string, int>> nameValuePairs;
+
+        while (lineStream >> name >> value) {
+            
+            if (value[0] != 's' && value[0] != 'b') {
+                int n = std::stoi(value); // Convert the value to an integer
+                nameValuePairs.push_back(std::make_pair(name, n));
+            }
+        }
+
+        // Extract 'price' and 's/b' values (assuming they are at the end of each input line)
+        if (name[0] == '$') return 0;
+        std::string price, sb;
+        price = name;
+        sb = value;
+
+    //      Map* myMap = new Map();
+        
+    //     for (size_t i = 0; i < nameValuePairs.size(); i++) {
+    //         myMap->insert(nameValuePairs[i].first, nameValuePairs[i].second);
+    //     }
+    //     int x=stringToInt(price);
+    //     dataVector.push_back(new MyData(x, myMap)); // Convert price to an integer
+    //      cout<<dataVector[0]->mapPtr->find("X")->second <<endl;
+    //     std::cout << "Price: " << x<< ", S/B: " << sb << std::endl;
+            Map* myMap = new Map();
+        for (size_t i = 0; i < nameValuePairs.size(); i++) {
+            // myMap->insert(nameValuePairs[i].first, nameValuePairs[i].second);
+            (*myMap)[nameValuePairs[i].first] = nameValuePairs[i].second;
+        }
+
+        int x = stringToInt(price);
+        dataVector.push_back(new MyData(x, myMap)); // Pass the pointer to the new Map
+
+        // Access an element in the map
+        auto it = dataVector[0]->mapPtr->find("X");
+        if (it != NULL) {
+            cout << "Value for 'X': " << it->second << endl;
+        } else {
+            cout << "Key 'X' not found in the map." << endl;
+        }
+
+        std::cout << "Price: " << x << ", S/B: " << sb << std::endl;
+    }
+   
+    // Don't forget to deallocate memory for the dynamically allocated MyData objects
+    for (MyData* item : dataVector) {
+        delete item;
+    }
+
+    return 0;
 }
