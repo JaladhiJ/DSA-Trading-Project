@@ -4,6 +4,8 @@
 #include <string>
 #include<set>
 using namespace std;
+
+// Custom Map Class
 class Map {
 private:
     Map* iterator(const string& first) {
@@ -204,7 +206,6 @@ private:
         return head;
     }
 
-
 public:
     class Map* root;
     int cnt;
@@ -357,20 +358,7 @@ public:
             return;
         }
     }
-Map* getIthElement(int i) {
-    return getIthElementUtil(Minimum(root), i);
-}
 
-Map* getIthElementUtil(Map* node, int &i) {
-    if (node == nullptr)
-        return nullptr;
-
-    int position=i;
-    if(position==0)return node;
-    else{
-        return getIthElementUtil(Successor(node),--position);
-    }
-}
     bool empty(void) {
         if (root == nullptr)
             return true;
@@ -417,51 +405,10 @@ Map* getIthElementUtil(Map* node, int &i) {
             temp->second = value;
         }
     }
-    Map* Minimum(Map* node) 
-    {
-        if (node == nullptr)
-            return nullptr;
-
-        while (node->left != nullptr) {
-            node = node->left;
-        }
-        return node;
-    }
-
-    Map* Successor(Map* node)
-     {
-            if (node == nullptr)
-                return nullptr;
-            if (node->right != nullptr) {
-                node = node->right;
-                while (node->left != nullptr) {
-                    node = node->left;
-                }
-                return node;
-            }
-            Map* parent = node->par;
-            while (parent != nullptr && node == parent->right) {
-                node = parent;
-                parent = parent->par;
-            }
-
-        return parent;
-    }
 };
-
-int pow(int x, int y) {
-    if (y == 0) {
-        return 1; 
-    } else if (y > 0) {
-        return x * pow(x, y - 1);
-    } else {
-        return 1 / pow(x, -y);
-    }
-}
-
 int stringToInt(string str) {
     int result = 0;
-    int sign = 1; 
+    int sign = 1;
     if (!str.empty() && str[0] == '-') {
         sign = -1;
         str = str.substr(1); 
@@ -477,252 +424,99 @@ int stringToInt(string str) {
 }
 
 struct MyData {
-    char whatsit;
     int value;
     Map* mapPtr;
     
-    MyData(char s, int v, Map* ptr) : whatsit(s), value(v), mapPtr(ptr) {}
+    MyData(int v, Map* ptr) : value(v), mapPtr(ptr) {}
 };
 
-std::string decimalToBinary(int n) {
-    std::string binary = "";
-    if (n == 0) {
-        return "0";
-    }
-
-    while (n > 0) {
-        binary = std::to_string(n % 2) + binary;
-        n /= 2;
-    }
-
-    return binary;
-}
-
-
-int main()
-{
-    // Simulating the received message from your code
+int main() {
     Receiver rcv;
-    std:: string message="";
+    Map map;
+    Map highestsell;
+    Map lowestbuy;
+   std:: string message="";
    while(true)
-    {
-        message+=rcv.readIML();
-        if(message[message.size()-1]=='$')break;
-    }
+   {
+     message+=rcv.readIML();
+     if(message[message.size()-1]=='$')break;
+   }
     std::istringstream iss(message);
     std::string input;
-    char delimiter = '#';
-    std::vector<MyData*> dataVector;
-    Map* firstone;
-    firstone = new Map();
-    dataVector.push_back(new MyData('s', 0, firstone));
-    std::vector<int> deleter;
-    int total=0;
-    int maxval=0;
-    int goodindex=-1;
-    while (std::getline(iss, input, delimiter)) 
-    {
+    while (std::getline(iss, input, '#')) {
         std::istringstream lineStream(input);
-        std::string name, value;
-        std::vector<std::pair<std::string, int>> nameValuePairs;
-        
-        while (lineStream >> name >> value) 
+        std::string name, value, sb;
+        lineStream>>name>>value>>sb;
+        if(name[0]=='$')return 0;
+        int n=stringToInt(value);
+        if(!map.count(name))
         {
-            if (value[0] != 's' && value[0] != 'b') 
-            {
-                int n = std::stoi(value);
-                nameValuePairs.push_back(std::make_pair(name, n));
-            }
+                map.insert(name,n);cout<<name<<" "<<n<<" ";
+                if(sb[0]=='s')cout<<'b'<<endl;
+                if(sb[0]=='b')cout<<'s'<<endl;
         }
-        if (name[0] == '$') break;
-        std::string price, sb;
-        price = name;
-        sb = value;
-
-            Map* myMap;
-            myMap = new Map();
-        if(sb[0]=='s')
+        else
         {
-            for (size_t i = 0; i < nameValuePairs.size(); i++) 
+            if(sb[0]=='s')
             {
-                nameValuePairs[i].second = -1*nameValuePairs[i].second; 
-            }
-        }
-        for (size_t i = 0; i < nameValuePairs.size(); i++) 
-        {
-            (*myMap)[nameValuePairs[i].first] = nameValuePairs[i].second;
-        }
-        int x = stringToInt(price);
-        if(sb[0]=='s'){sb[0]='b';x=-1*x;}
-        else if(sb[0]=='b'){sb[0]='s';}
-
-        int checkc=1;
-        string maxi=decimalToBinary(dataVector.size());
-        for (size_t l = 0; l < maxi.size()-1; l++)
-        {
-            int t=pow(2,l);
-            if(sb[0]==dataVector[t]->whatsit)
-            {
-                checkc=1;
-                for(int i=0;i<myMap->size();i++)
+                    if(n<map[name])
                     {
-                         auto it = dataVector[t]->mapPtr->find(nameValuePairs[i].first);
-                                if (it != NULL)
-                                {
-                                   if(it->second!=nameValuePairs[i].second)
-                                    {
-                                        checkc=0;break;
-                                    }
-                                } 
-                                else
-                                {
-                                    checkc=0;break;
-                                }
-                    }
-                    if(sb[0]=='s' && checkc==1)
-                    {
-                        if(x>=dataVector[t]->value)
-                        {
-                            checkc=10+t;
+                        map.update(name,n);
+                               
+                        if(lowestbuy[name]==0||n<lowestbuy[name])
+                        { 
+                            cout<<name<<" "<<n<<" "<<'b'<<endl;
                         }
                         else
                         {
-                            checkc=2;
+                            cout<<"No Trade"<<endl;
                         }
+                               
                     }
-                    else if(sb[0]=='b' && checkc==1)
+                    else
                     {
-                        if(x>dataVector[t]->value){checkc=2;}
-                        else
-                        {
-                            checkc=10+t;
-                        }
-                    }
-                if(checkc>0)
-                {
-                    for (size_t i = 0; i < deleter.size(); i++)
-                    {
-                        if((t & deleter[i])!=0)
-                        { 
-                            checkc=0;
-                        }
-                    }
-                }
-                if(checkc>0)break;  
-            }
-        }
-        if(checkc==2)
-        {
-            continue;
-        }  
-        else if(checkc>9)
-        {
-            deleter.push_back(checkc-10);
-        }
-
-        dataVector.push_back(new MyData(sb[0],x, myMap)); 
-        int k=dataVector.size();
-        for(int j=1;j<k-1;j++)
-        {
-                    Map* mine;
-                    mine = new Map();
-                    bool chec=0;
-                    for (size_t i = 0; i < deleter.size(); i++)
-                    {
-                        if((j & deleter[i])!=0)
-                        { 
-                            dataVector.push_back(new MyData('s', 0, mine));chec=1;
-                            break;
-                        }
-                    }
-                    if(chec==1)continue;
-                    
-                    for(int i=0;i<myMap->size();i++)
-                    {
-                         auto it = dataVector[j]->mapPtr->find(nameValuePairs[i].first);
-                                if (it != NULL)
-                                {
-                                   (*mine)[nameValuePairs[i].first]=it->second+nameValuePairs[i].second;
-                                } 
-                                else
-                                {
-                                    (*mine)[nameValuePairs[i].first]=nameValuePairs[i].second;
-                                }
-                    }
-                    for (size_t i = 0; i < dataVector[j]->mapPtr->size(); i++)
-                    {
-                        auto it = mine->find(dataVector[j]->mapPtr->getIthElement(i)->first);
-                        if (it != NULL)
-                                {
-                                   continue;
-                                } 
-                                else
-                                {
-                                    (*mine)[dataVector[j]->mapPtr->getIthElement(i)->first]=dataVector[j]->mapPtr->getIthElement(i)->second;
-                                }
-                    }
-                    int valuedat=0;
-                    valuedat=dataVector[j]->value+dataVector[k-1]->value;
-                    dataVector.push_back(new MyData('s', valuedat, mine));
-                    
-                    if(valuedat>0)
-                    {
-                           for (size_t z = 0; z < mine->size(); z++)
+                        if(lowestbuy[name]==0)
                             {
-                                int j=0;
-                                bool checks=0;
-                                while(mine->getIthElement(j)!=nullptr)
-                                {
-                                    if(mine->getIthElement(j)->second!=0)checks=1;
-                                    j++;
-                                }
-                                if(maxval<valuedat && checks==0)
-                                {
-                                    maxval=valuedat;
-                                    goodindex=dataVector.size()-1;
-                                }
+                                lowestbuy.insert(name,n);
                             }
+                        else if(n<lowestbuy[name])
+                        {
+                            lowestbuy.update(name,n);
+                           
+                        }
+                         cout<<"No Trade"<<endl;
                     }
-        }
-        if(maxval==0)cout<<"No Trade"<<endl;
-        else if(maxval>0)
-        {
-            string printer=decimalToBinary(goodindex);
-            for(int i=0; i<printer.size(); i++)
-            {
-                if(printer[i]=='0'){continue;}
-                int r=pow(2,printer.size()-1-i);
-                deleter.push_back(r);
-                int j=0;
-                if(dataVector[r]->whatsit=='b')
-                {
-                    while(dataVector[r]->mapPtr->getIthElement(j)!=nullptr)
-                    {
-                        cout<<dataVector[r]->mapPtr->getIthElement(j)->first<<" "<<-1*dataVector[r]->mapPtr->getIthElement(j)->second<<" ";
-                        j++;
-                    }
-                    cout<<-1*dataVector[r]->value<<" "<<dataVector[r]->whatsit<<"#"<<endl;
-                }
-                if(dataVector[r]->whatsit=='s')
-                {
-                    while(dataVector[r]->mapPtr->getIthElement(j)!=nullptr)
-                    {
-                        cout<<dataVector[r]->mapPtr->getIthElement(j)->first<<" "<<dataVector[r]->mapPtr->getIthElement(j)->second<<" ";
-                        j++;
-                    }
-                    cout<<dataVector[r]->value<<" "<<dataVector[r]->whatsit<<"#"<<endl;
-                }
             }
-            total+=maxval;
-            maxval=0;
-            goodindex=-1;
+            else
+            {
+                    if(n>map[name])
+                    {
+                        map.update(name,n);
+                        if(highestsell[name]==0||n>highestsell[name])
+                        {  
+                            cout<<name<<" "<<n<<" "<<'s'<<endl;
+                        }
+                        else
+                        {
+                            cout<<"No Trade"<<endl;
+                        }
+                                
+                    }
+                    else
+                    {
+                        if(highestsell[name]==0)
+                        {
+                            highestsell.insert(name,n);
+                        }
+                        else if(n>highestsell[name])
+                        {
+                            highestsell.update(name,n);
+                           
+                        }
+                         cout<<"No Trade"<<endl;
+                    }
+            }
         }
-        auto it = dataVector.back()->mapPtr->find("X");
-    }
-    cout<<total<<endl;
-    for (MyData* item : dataVector) {
-        delete item;
-    }
-
+}
     return 0;
 }
