@@ -461,12 +461,11 @@ int main() {
             {
                     if(n<map[name])
                     {
-                       // map.update(name,n);
-                               
                         if((lowestbuy[name]==0||n<lowestbuy[name]) && (n!=highestsell[name] || !highestsell[name]))
                         { 
                             cout<<name<<" "<<n<<" "<<'b'<<endl;
-                             map.update(name,n);
+                            lowestbuy.update(name,n);
+                            map.update(name,n);
                         }
                         else
                         {
@@ -493,16 +492,14 @@ int main() {
             }
             else
             {
-               // cout<<map[name]<<" "<<name<<" chud gayea "<<endl;
                     if(n>map[name])
                     {
-                        //map.update(name,n);
-                     //   cout<<highestsell[name]<<endl;
-                       // cout<<lowestbuy[name]<<endl;
+
                         if((highestsell[name]==0||n>highestsell[name]) && (n!=lowestbuy[name] || !lowestbuy[name]))
-                        {  
+                        { 
                             cout<<name<<" "<<n<<" "<<'s'<<endl;
-                             map.update(name,n);
+                            map.update(name,n);
+                            highestsell.update(name,n);
                         }
                         else
                         {
